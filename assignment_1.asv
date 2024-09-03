@@ -5,10 +5,12 @@ test_derivative01 = @(x) 3*(x.^2)/100 - 2*x/8 + 2 +(6/2)*cos(x/2+6) - exp(x/6)/6
 test_func_1 = @(x)[(x.^2) - 9, (2*x)];
 test_func = @(x) (x.^2) - 9;
 
+test_func_pair = [test_func01, test_derivative01]
+
 zeros = bisection_solver(test_func, 0, 6);
-test = bisection_solver(test_func01, 0, 10);
+test = bisection_solver(test_func, 0, 10);
 test_1 = newton_solver(test_func_1, 4)
-test_2 = secant_solver(test_func, x0, x1)
+test_2 = secant_solver(test_func, 1, 4)
 
 function x = bisection_solver(fun,x_left,x_right)
     x_mid = 10;
@@ -41,8 +43,12 @@ function z = newton_solver(fun,x0)
     while difference > 10^-14
         x0 = x1;
         y_val = fun(x0) ;
-        x1 = x0 - y_val(1)/ y_val(2);
-        difference = abs(x1 - x0);
+        if abs(y_val(2)) < 10^-14
+            quit
+        else
+            x1 = x0 - y_val(1)/ y_val(2);
+            difference = abs(x1 - x0);
+        end 
     end
     z = x1;
 end
@@ -52,9 +58,14 @@ end
 function x = secant_solver(fun, x0, x1)
     difference = 1;
     while difference > 10^-14
+        if abs(fun(x1)-fun(x0)) < 10^-14
+            quit
+        else
         x2 = x1-fun(x1)*((x1-x0)/(fun(x1)-fun(x0)));
         difference = abs(x2-x1);
         x0 = x1;
+        x1 = x2;
+        end
     end
     x = x2;
 end
