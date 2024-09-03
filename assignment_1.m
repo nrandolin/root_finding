@@ -8,6 +8,7 @@ test_func = @(x) (x.^2) - 9;
 zeros = bisection_solver(test_func, 0, 6);
 test = bisection_solver(test_func01, 0, 10);
 test_1 = newton_solver(test_func_1, 4)
+test_2 = secant_solver(test_func, 1, 3)
 
 function x = bisection_solver(fun,x_left,x_right)
     x_mid = 10;
