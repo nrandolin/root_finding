@@ -49,6 +49,12 @@ end
 
 
 function x = secant_solver(fun, x0, x1)
-
+    difference = 1;
+    while difference > 10^-14
+        x2 = x1-fun(x1)*((x1-x0)/(fun(x1)-fun(x0)));
+        difference = abs(x2-x1);
+        x0 = x1;
+    end
+    x = x2;
 end
 
