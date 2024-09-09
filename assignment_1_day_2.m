@@ -2,48 +2,6 @@ clear
 
 test_func01 = @(x) (x.^3)/100 - (x.^2)/8 + 2*x + 6*sin(x/2+6) -.7 - exp(x/6);
 x_root = bisection_solver(test_func01, 0, 10);
-
-%% Function Start
-%Example template for analysis function
-%INPUTS:
-%solver_flag: an integer from 1-4 indicating which solver to use
-% 1->Bisection 2-> Newton 3->Secant 4->fzero
-%fun: the mathematical function that we are using the
-% solver to compute the root of
-%x_guess0: the initial guess used to compute x_root
-%guess_list1: a list of initial guesses for each trial
-%guess_list2: a second list of initial guesses for each trial
-% if guess_list2 is not needed, then set to zero in input
-%filter_list: a list of constants used to filter the collected data
-function convergence_analysis(solver_flag, fun, ...
-x_guess0, guess_list1, guess_list2, filter_list)
-x = bisection_solver(test_func01, 0, 10);
-
-
-    [dfdx,d2fdx2] = approximate_derivative(fun,x);
-    
-    if solver_flag == 1
-        p_actual = 1;
-    elseif solver_flag == 2
-        p_actual = 2;
-        [dfdx,d2fdx2] = approximate_derivative(fun,x);
-        k_actual = d2fdx2/(2*dfdx);
-    elseif solver_flag == 3
-        p_actual = (1 +sqrt(5))/2;
-        k_actual = (1 +sqrt(5))/2;
-    elseif solver_flag == 4
-        p_actual = "fzero";
-        k_actual = "fzero";
-    else
-        print "Unknown method"
-        return
-    end
-
-    
-
-
-
-end
 %%
 x = bisection_solver(test_func01, 0, 10);
 [dfdx,d2fdx2] = approximate_derivative(fun,x);
@@ -67,48 +25,47 @@ end
 %% Below, I have provided
 % an example for how to collect data for the convergence of the bisection method (specifically for the left root
 % of the test function described at the start of this exercise):
-
-%declare input_list as a global variable
-global input_list;
-%number of trials we would like to perform
-num_iter = 1000;
-%list for the left and right guesses that we would like
-%to use each trial. These guesses have all been chosen
-%so that each trial will converge to the same root
-%because the root is somewhere between -5 and 5.
-x_left_list = linspace(-10,-5,num_iter);
-x_right_list = linspace(5,25,num_iter);
-%list of estimate at current iteration (x_{n})
-%compiled across all trials
-x_current_list = [];
-%list of estimate at next iteration (x_{n+1})
-%compiled across all trials
-x_next_list = [];
-%keeps track of which iteration (n) in a trial
-%each data point was collected from
-index_list = [];
-%loop through each trial
-for n = 1:num_iter
-    %pull out the left and right guess for the trial
-    x_left = x_left_list(n);
-    x_right = x_right_list(n);
-    %clear the input_list global variable
-    input_list = [];
-    %run the bisection solver
-    global_bisection(@test_function, x_left, x_right)
-    %at this point, input_list will be populated with the values that
-    %the solver called at each iteration.
-    %In other words, it is now [x_1,x_2,...x_n-1,x_n]
-    %append the collected data to the compilation
-    x_current_list = [x_current_list,input_list(1:end-1)];
-    x_next_list = [x_next_list,input_list(2:end)];
-    index_list = [index_list,1:length(input_list)-1];
-end
-%At this point, x_current_list corresponds to many many
-%measurements of x_{n} across many trials
-%and x_next_list corresponds to many many measurements of
-%the corresponding value of x_{n+1} across many trials
-%this is the data the you want to clean and analaze
+    %declare input_list as a global variable
+    global input_list;
+    %number of trials we would like to perform
+    num_iter = 1000;
+    %list for the left and right guesses that we would like
+    %to use each trial. These guesses have all been chosen
+    %so that each trial will converge to the same root
+    %because the root is somewhere between -5 and 5.
+    x_left_list = linspace(-10,-5,num_iter);
+    x_right_list = linspace(5,25,num_iter);
+    %list of estimate at current iteration (x_{n})
+    %compiled across all trials
+    x_current_list = [];
+    %list of estimate at next iteration (x_{n+1})
+    %compiled across all trials
+    x_next_list = [];
+    %keeps track of which iteration (n) in a trial
+    %each data point was collected from
+    index_list = [];
+    %loop through each trial
+    for n = 1:num_iter
+        %pull out the left and right guess for the trial
+        x_left = x_left_list(n);
+        x_right = x_right_list(n);
+        %clear the input_list global variable
+        input_list = [];
+        %run the bisection solver
+        global_bisection(@test_function, x_left, x_right)
+        %at this point, input_list will be populated with the values that
+        %the solver called at each iteration.
+        %In other words, it is now [x_1,x_2,...x_n-1,x_n]
+        %append the collected data to the compilation
+        x_current_list = [x_current_list,input_list(1:end-1)];
+        x_next_list = [x_next_list,input_list(2:end)];
+        index_list = [index_list,1:length(input_list)-1];
+    end
+    %At this point, x_current_list corresponds to many many
+    %measurements of x_{n} across many trials
+    %and x_next_list corresponds to many many measurements of
+    %the corresponding value of x_{n+1} across many trials
+    %this is the data the you want to clean and analaze
 
 %% Error Analysis
 
@@ -117,6 +74,7 @@ error_list1 = abs(x_next_list - x_root);
 
 figure(1)
 loglog(error_list0, error_list1, 'ro', 'markersize', 1)
+
 
 %% clean data
 %example for how to filter the error data
@@ -197,7 +155,7 @@ function [p,k] = generate_error_fit(x_regression,y_regression)
 end
 % We can then plot the fit line on a log-log plot:
 %%
-function output = test_function(x)
+function output = test_function(fun, x)
     %declare input_list as a global variable
     global input_list;
 
@@ -207,7 +165,7 @@ function output = test_function(x)
 
     %perform the rest of the computation to generate output
     %I just put in a quadratic function as an example
-    output = (x.^3)/100 - (x.^2)/8 + 2*x + 6*sin(x/2+6) -.7 - exp(x/6);
+    output = fun;
 end
 
 

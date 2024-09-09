@@ -1,4 +1,4 @@
-clear
+   clear
 solver_flag = 1;
 fun = @test_function;
 
@@ -7,65 +7,54 @@ guess_list1 = linspace(-10,-5,1000);
 guess_list2 = linspace(5,25,1000);
 filter_list = 1;
 
-convergence_anal(solver_flag, fun, ...
-x_guess0, guess_list1, guess_list2, filter_list)
-
-
-%% Function Start
-%Example template for analysis function
-%INPUTS:
-%solver_flag: an integer from 1-4 indicating which solver to use
-% 1->Bisection 2-> Newton 3->Secant 4->fzero
-%fun: the mathematical function that we are using the
-% solver to compute the root of
-%x_guess0: the initial guess used to compute x_root
-%guess_list1: a list of initial guesses for each trial
-%guess_list2: a second list of initial guesses for each trial
-% if guess_list2 is not needed, then set to zero in input
-%filter_list: a list of constants used to filter the collected data
-function convergence_anal(solver_flag, fun, ...
-x_guess0, guess_list1, guess_list2, filter_list)
-    % Find actual* Root
+% Find actual* Root
     x_root = fzero(fun, x_guess0);
 
 % bisection
     if solver_flag == 1
         % Check method and calculate actual p & K values
         p_actual = 1;
-% do the global variable ing
-        num_iter = length(guess_list1);
-            %list for the left and right guesses that we would like
-    %to use each trial. These guesses have all been chosen
-    %so that each trial will converge to the same root
-    %because the root is somewhere between -5 and 5.
-    x_left_list = linspace(-10,-5,num_iter);
-    x_right_list = linspace(5,25,num_iter);
-    %list of estimate at current iteration (x_{n})
-    %compiled across all trials
-    x_current_list = [];
-    %list of estimate at next iteration (x_{n+1})
-    %compiled across all trials
-    x_next_list = [];
-    %keeps track of which iteration (n) in a trial
-    %each data point was collected from
-    index_list = [];
-    %loop through each trial
-        for n = 1:num_iter
-            %pull out the left and right guess for the trial
-            x_left = guess_list1(n);
-            x_right = guess_list2(n);
-            %clear the input_list global variable
-            input_list = [];
-            %run the bisection solver
-            global_bisection(fun, x_left, x_right)
-            %at this point, input_list will be populated with the values that
-            %the solver called at each iteration.
-            %In other words, it is now [x_1,x_2,...x_n-1,x_n]
-            %append the collected data to the compilation
-            x_current_list = [x_current_list,input_list(1:end-1)];
-            x_next_list = [x_next_list,input_list(2:end)];
-            index_list = [index_list,1:length(input_list)-1];
-        end
+global input_list;
+%number of trials we would like to perform
+num_iter = length(guess_list1);
+%list for the left and right guesses that we would like
+%to use each trial. These guesses have all been chosen
+%so that each trial will converge to the same root
+%because the root is somewhere between -5 and 5.
+x_left_list = guess_list1;
+x_right_list = guess_list2;
+%list of estimate at current iteration (x_{n})
+%compiled across all trials
+x_current_list = [];
+%list of estimate at next iteration (x_{n+1})
+%compiled across all trials
+x_next_list = [];
+%keeps track of which iteration (n) in a trial
+%each data point was collected from
+index_list = [];
+%loop through each trial
+for n = 1:num_iter
+    %pull out the left and right guess for the trial
+    x_left = x_left_list(n);
+    x_right = x_right_list(n);
+    %clear the input_list global variable
+    input_list = [];
+    %run the bisection solver
+    global_bisection(fun, x_left, x_right)
+    %at this point, input_list will be populated with the values that
+    %the solver called at each iteration.
+    %In other words, it is now [x_1,x_2,...x_n-1,x_n]
+    %append the collected data to the compilation
+    x_current_list = [x_current_list,input_list(1:end-1)];
+    x_next_list = [x_next_list,input_list(2:end)];
+    index_list = [index_list,1:length(input_list)-1];
+end
+%At this point, x_current_list corresponds to many many
+%measurements of x_{n} across many trials
+%and x_next_list corresponds to many many measurements of
+%the corresponding value of x_{n+1} across many trials
+%this is the data the you want to clean and analaze
+
         % Newton
     elseif solver_flag == 2
         % actual p and k
@@ -116,7 +105,7 @@ x_guess0, guess_list1, guess_list2, filter_list)
     elseif solver_flag == 4
         p_actual = "fzero";
         k_actual = "fzero";
-% Do the global variable thing
+    % Do the global variable thing
         num_iter = length(guess_list1);
         for n = 1:num_iter
             %pull out the left and right guess for the trial
@@ -138,40 +127,48 @@ x_guess0, guess_list1, guess_list2, filter_list)
         return
     end
 
-error_list0 = abs(x_current_list - x_root);
-error_list1 = abs(x_next_list - x_root);
 
-x_regression = []; % e_n
-y_regression = []; % e_{n+1}
-%iterate through the collected data
-for n=1:length(index_list)
-    %if the error is not too big or too small
-    %and it was enough iterations into the trial...
-    if error_list0(n)>1e-15 && error_list0(n)<1e-2 && ...
-    error_list1(n)>1e-14 && error_list1(n)<1e-2 && ...
-    index_list(n)>2
-        %then add it to the set of points for regression
-        x_regression(end+1) = error_list0(n);
-        y_regression(end+1) = error_list1(n);
+    error_list0 = abs(x_current_list - x_root);
+    error_list1 = abs(x_next_list - x_root);
+    
+    figure(1)
+    loglog(error_list0, error_list1, 'ro', 'markersize', 1)
+    
+    %example for how to filter the error data
+    %currently have error_list0, error_list1, index_list
+    %data points to be used in the regression
+    x_regression = []; % e_n
+    y_regression = []; % e_{n+1}
+    %iterate through the collected data
+    for n=1:length(index_list)
+        %if the error is not too big or too small
+        %and it was enough iterations into the trial...
+        if error_list0(n)>1e-15 && error_list0(n)<1e-2 && ...
+        error_list1(n)>1e-14 && error_list1(n)<1e-2 && ...
+        index_list(n)>2
+            %then add it to the set of points for regression
+            x_regression(end+1) = error_list0(n);
+            y_regression(end+1) = error_list1(n);
+        end
     end
-end
 
-figure(1)
-loglog(x_regression, y_regression, 'ro', 'markersize', 1)
-hold on
-%example for how to plot fit line
-%generate x data on a logarithmic range
-sprintf(x_regression)
-sprintf(y_regression)
-[p,k] = generate_error_fit(x_regression,y_regression);
-fit_line_x = 10.^[-16:.01:1];
-%compute the corresponding y values
-fit_line_y = k*fit_line_x.^p;
-%plot on a loglog plot.
-loglog(fit_line_x,fit_line_y,'k-','linewidth',2)
-end
 
-%% Derivative Function
+    figure(2)
+    loglog(x_regression, y_regression, 'ro', 'markersize', 1)
+    hold on
+    
+    %example for how to plot fit line
+    %generate x data on a logarithmic range
+    [p,k] = generate_error_fit(x_regression,y_regression);
+    fit_line_x = 10.^[-16:.01:1];
+    %compute the corresponding y values
+    fit_line_y = k*fit_line_x.^p;
+    %plot on a loglog plot.
+    loglog(fit_line_x,fit_line_y,'k-','linewidth',2)
+
+
+
+    %% Derivative Function
 function [dfdx,d2fdx2] = approximate_derivative(fun,x)
     %set the step size to be tiny
     delta_x = 1e-6;
