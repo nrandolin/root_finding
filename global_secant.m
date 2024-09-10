@@ -1,5 +1,5 @@
-%% Global Bisection
-function global_bisection(func, x_left, x_right)
+%% Global Secant
+function global_secant(fun, x0, x1)
     %declare input_list as a global variable
     global input_list;
 
@@ -9,7 +9,7 @@ function global_bisection(func, x_left, x_right)
     %initialize guesses for bisection solver
 
     %run the bisection solver
-    x_root = bisection_solver(func,x_left,x_right);
+    x_root = secant_solver(fun, x0, x1);
 
     %at this point, input_list will be populated with the input arguments
     %that bisection_solver used to call test_function

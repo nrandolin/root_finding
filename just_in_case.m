@@ -1,164 +1,73 @@
-clear
-solver_flag = 3;
-fun = @test_function;
+%% Function Start
+function convergence_analysis(solver_flag, fun, ...
+x_guess0, guess_list1, guess_list2, filter_list)
+    %Example template for analysis function
+    %INPUTS:
+    %solver_flag: an integer from 1-4 indicating which solver to use
+    % 1->Bisection 2-> Newton 3->Secant 4->fzero
+    %fun: the mathematical function that we are using the
+    % solver to compute the root of
+    %x_guess0: the initial guess used to compute x_root
+    %guess_list1: a list of initial guesses for each trial
+    %guess_list2: a second list of initial guesses for each trial
+    % if guess_list2 is not needed, then set to zero in input
+    %filter_list: a list of constants used to filter the collected data
 
-x_guess0 =1;
-guess_list1 = linspace(-3,2,100);
-guess_list2 = linspace(3,6,100);
-filter_list = 1;
-
-% Find actual* Root
-    x_root = fzero(fun, x_guess0);
-
-% bisection
-if solver_flag == 1
-        % Check method and calculate actual p & K values
-        p_actual = 1;
-    global input_list;
-    %number of trials we would like to perform
-    num_iter = length(guess_list1);
-    %list for the left and right guesses that we would like
-    %to use each trial. These guesses have all been chosen
-    %so that each trial will converge to the same root
-    %because the root is somewhere between -5 and 5.
-    x_left_list = guess_list1;
-    x_right_list = guess_list2;
-    %list of estimate at current iteration (x_{n})
-    %compiled across all trials
+    % Define initial variables
+    x_root = fzero(fun, x_guess0); % Known zero
+    global input_list; % list of input values (error) from all iterations
+    num_iter = length(guess_list1); % number of iterations
+    x_left_list = guess_list1; % left guesses
+    x_right_list = guess_list2; % right guesses (0 if newton)
+    
+    % Create list variables
     x_current_list = [];
-    %list of estimate at next iteration (x_{n+1})
-    %compiled across all trials
     x_next_list = [];
-    %keeps track of which iteration (n) in a trial
-    %each data point was collected from
     index_list = [];
-    %loop through each trial
+
+    % Collect Error Data
     for n = 1:num_iter
         %pull out the left and right guess for the trial
         x_left = x_left_list(n);
         x_right = x_right_list(n);
         %clear the input_list global variable
         input_list = [];
-        %run the bisection solver
-        global_bisection(fun, x_left, x_right)
-        %at this point, input_list will be populated with the values that
-        %the solver called at each iteration.
-        %In other words, it is now [x_1,x_2,...x_n-1,x_n]
-        %append the collected data to the compilation
-        x_current_list = [x_current_list,input_list(1:end-1)];
-        x_next_list = [x_next_list,input_list(2:end)];
-        index_list = [index_list,1:length(input_list)-1];
-    end
-    %At this point, x_current_list corresponds to many many
-    %measurements of x_{n} across many trials
-    %and x_next_list corresponds to many many measurements of
-    %the corresponding value of x_{n+1} across many trials
-    %this is the data the you want to clean and analaze
-    
-
-% Newton
-elseif solver_flag == 2
-        % actual p and k
-        p_actual = 2;
-        [dfdx,d2fdx2] = approximate_derivative(fun,x_root);
-        k_actual = d2fdx2/(2*dfdx);
-
-        %number of trials we would like to perform
-        num_iter = length(guess_list1);
-        %list for the left and right guesses that we would like
-        %to use each trial. These guesses have all been chosen
-        %so that each trial will converge to the same root
-        %because the root is somewhere between -5 and 5.
-        x_left_list = guess_list1;
-        x_right_list = guess_list2;
-        %list of estimate at current iteration (x_{n})
-        %compiled across all trials
-        x_current_list = [];
-        %list of estimate at next iteration (x_{n+1})
-        %compiled across all trials
-        x_next_list = [];
-        %keeps track of which iteration (n) in a trial
-        %each data point was collected from
-        index_list = [];
-        %loop through each trial
-        for n = 1:num_iter
-            %pull out the left and right guess for the trial
-            x_left = x_left_list(n);
-            %clear the input_list global variable
-            input_list = [];
-            %run the bisection solver
+        %run the solver
+        if solver_flag == 1 % bisection
+            p_actual = 1;
+            global_bisection(fun, x_left, x_right)
+        elseif solver_flag == 2 % newton
+            p_actual = 2;
+            [dfdx,d2fdx2] = approximate_derivative(fun,x_root);
+            k_actual = d2fdx2/(2*dfdx);
             global_newton(fun, x_left)
-            %at this point, input_list will be populated with the values that
-            %the solver called at each iteration.
-            %In other words, it is now [x_1,x_2,...x_n-1,x_n]
-            %append the collected data to the compilation
-            x_current_list = [x_current_list,input_list(1:end-1)];
-            x_next_list = [x_next_list,input_list(2:end)];
-            index_list = [index_list,1:length(input_list)-1];
-        
-        end  
-
-% Secant
-    elseif solver_flag == 3
-        p_actual = (1 +sqrt(5))/2;
-        k_actual = (1 +sqrt(5))/2;
-        global input_list
-        %number of trials we would like to perform
-        num_iter = length(guess_list1);
-        %list for the left and right guesses that we would like
-        %to use each trial. These guesses have all been chosen
-        %so that each trial will converge to the same root
-        %because the root is somewhere between -5 and 5.
-        x_left_list = guess_list1;
-        x_right_list = guess_list2;
-        %list of estimate at current iteration (x_{n})
-        %compiled across all trials
-        x_current_list = [];
-        %list of estimate at next iteration (x_{n+1})
-        %compiled across all trials
-        x_next_list = [];
-        %keeps track of which iteration (n) in a trial
-        %each data point was collected from
-        index_list = [];
-        %loop through each trial
-        for n = 1:num_iter
-            %pull out the left and right guess for the trial
-            x_left = x_left_list(n)
-            x_right = x_right_list(n)
-            %clear the input_list global variable
-            input_list = [];
-            %run the bisection solver
-            global_secant(fun, x_left, x_left+.01)
-     
-            %at this point, input_list will be populated with the values that
-            %the solver called at each iteration.
-            %In other words, it is now [x_1,x_2,...x_n-1,x_n]
-            %append the collected data to the compilation
-            x_current_list = [x_current_list,input_list(1:end-1)];
-            x_next_list = [x_next_list,input_list(2:end)];
-            index_list = [index_list,1:length(input_list)-1];
-        end
-        %At this point, x_current_list corresponds to many many
-        %measurements of x_{n} across many trials
-        %and x_next_list corresponds to many many measurements of
-        %the corresponding value of x_{n+1} across many trials
-        %this is the data the you want to clean and analaze
-        
+        elseif solver_flag == 3 % secant
+            p_actual = (1 +sqrt(5))/2;
+            k_actual = (1 +sqrt(5))/2;
+            global_secant(fun, x_left, x_left+0.1)
+        elseif solver_flag == 4 % newton
+            fzero(fun, x_left)
         else
             print "Unknown method"
             return
         end
 
-    % Error filtration
+        
+        x_current_list = [x_current_list,input_list(1:end-1)];
+        x_next_list = [x_next_list,input_list(2:end)];
+        index_list = [index_list,1:length(input_list)-1];
+    end
+
+    % Calculte Error
     error_list0 = abs(x_current_list - x_root);
     error_list1 = abs(x_next_list - x_root);
     
+    % Plot all Error data
     figure(1)
     loglog(error_list0, error_list1, 'ro', 'markersize', 1)
+    title("Error Data")
     
-    %example for how to filter the error data
-    %currently have error_list0, error_list1, index_list
-    %data points to be used in the regression
+    % Clean data
     x_regression = []; % e_n
     y_regression = []; % e_{n+1}
     %iterate through the collected data
@@ -174,23 +83,21 @@ elseif solver_flag == 2
         end
     end
 
-
+    % Plot clean data
     figure(2)
     loglog(x_regression, y_regression, 'ro', 'markersize', 1)
     hold on
     
-    %example for how to plot fit line
-    %generate x data on a logarithmic range
+    % pgenerate fit line
     [p,k] = generate_error_fit(x_regression,y_regression);
     fit_line_x = 10.^[-16:.01:1];
     %compute the corresponding y values
     fit_line_y = k*fit_line_x.^p;
     %plot on a loglog plot.
     loglog(fit_line_x,fit_line_y,'k-','linewidth',2)
+end
 
-
-
-    %% Derivative Function
+%% Derivative Function
 function [dfdx,d2fdx2] = approximate_derivative(fun,x)
     %set the step size to be tiny
     delta_x = 1e-6;
@@ -293,9 +200,8 @@ function global_newton(func, x_0)
 end
 
 %% newton solver
-%Note that fun(x) should output [f,dfdx], where dfdx is the derivative of f
-function z = newton_solver(fun,x0)
-   difference = 1;
+function z = newton_solver(fun, x0)
+       difference = 1;
     x1 = x0;
     while difference > 10^-14
         x0 = x1;
@@ -334,15 +240,21 @@ end
 
 %% secant solver
 function x = secant_solver(fun, x0, x1)
+    y0 = fun(x0);
+    y1 = fun(x1);
     difference = 1;
     while difference > 10^-14
-        if abs(fun(x1)-fun(x0)) < 10^-14
+        if abs(y1-y0) < 10^-14
             quit
         else
-        x2 = x1-fun(x1)*((x1-x0)/(fun(x1)-fun(x0)));
+        x2 = x1-y1*((x1-x0)/(y1-y0));
         difference = abs(x2-x1);
+        
         x0 = x1;
+        y0 = y1;
+
         x1 = x2;
+        y1 = fun(x1);
         end
     end
     x = x2;

@@ -1,5 +1,5 @@
-%% Global Bisection
-function global_bisection(func, x_left, x_right)
+%% Global Newton
+function global_newton(func, x_0)
     %declare input_list as a global variable
     global input_list;
 
@@ -9,7 +9,7 @@ function global_bisection(func, x_left, x_right)
     %initialize guesses for bisection solver
 
     %run the bisection solver
-    x_root = bisection_solver(func,x_left,x_right);
+    x_root = newton_solver(func,x_0);
 
     %at this point, input_list will be populated with the input arguments
     %that bisection_solver used to call test_function
