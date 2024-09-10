@@ -1,29 +1,31 @@
-%% PLOT EGG
+egg_params = struct();
+egg_params.a = 3; egg_params.b = 2; egg_params.c = .15;
+%specify the position and orientation of the egg
+x0 = 5; y0 = 5; theta = pi/6;
+[x_range,y_range] = compute_bounding_box(x0,y0,theta,egg_params);
+figure;
 eggxample01()
-x_out = [];
-y_out = [];
-s = 0;
-for n=1:1000
-    [V,G] = egg_func(s,x0,y0,theta,egg_params);
-    x_out = [x_out, G(1)];
-    y_out = [y_out, G(2)];
-    s = s + 0.01;
-end
+rectangle('Position',[x_range(1) y_range(1) x_range(2)-x_range(1) y_range(2)]);
+
 %% WRAPPER 2
-%set the oval hyper-parameters
-function wrapper_2()
+%set the oval hyper-parameters (MOVED TO BOUNDING BOX)
+function [s_root_x, s_root_x_2, s_root_y, s_root_y_2] = wrapper_2()
     egg_params = struct();
     egg_params.a = 3; egg_params.b = 2; egg_params.c = .15;
     %specify the position and orientation of the egg
     x0 = 5; y0 = 5; theta = pi/6;
-    s = 0.7;
+    %s = 0.7;
     %wrapper function that calls egg_wrapper1
     %but only takes s as an input (other inputs are fixed)
     %(single input)
     egg_wrapper_2x = @(s) egg_wrapper_x(s,x0,y0,theta,egg_params);
     %compute the value of s for which the corresponding point on the oval
     %has an x-coordinate of zero
-    s_root_x = secant_solver(egg_wrapper2x,0,1);
+    egg_wrapper_2y = @(s) egg_wrapper_y(s,x0,y0,theta,egg_params);
+    s_root_x = secant_solver(egg_wrapper_2x,0,0.1);
+    s_root_x_2 = secant_solver(egg_wrapper_2x,-1,0.1);
+    s_root_y = secant_solver(egg_wrapper_2y,0,0.1);
+    s_root_y_2 = secant_solver(egg_wrapper_2y,0,0.9);
 end
 %% EGG CALL
 %template for how to properly call egg_func
@@ -53,6 +55,7 @@ function eggxample01()
     tan_vec_x = [V_single(1),V_single(1)+vector_scaling*G_single(1)];
     tan_vec_y = [V_single(2),V_single(2)+vector_scaling*G_single(2)];
     plot(tan_vec_x,tan_vec_y,'g')
+    hold on;
 end
 
 %% BOUNDING BOX
@@ -66,7 +69,16 @@ end
 %x_range: the x limits of the bounding box in the form [x_min,x_max]
 %y_range: the y limits of the bounding box in the form [y_min,y_max]
 function [x_range,y_range] = compute_bounding_box(x0,y0,theta,egg_params)
-%your code here
+    egg_wrapper_2x = @(s) egg_wrapper_x(s,x0,y0,theta,egg_params);
+    %compute the value of s for which the corresponding point on the oval
+    %has an x-coordinate of zero
+    egg_wrapper_2y = @(s) egg_wrapper_y(s,x0,y0,theta,egg_params);
+    s_root_x = secant_solver(egg_wrapper_2x,2,2.75); % WILL CRASH IF DIFFERENCE BETWEEN GUESSES IS >=1
+    s_root_x_2 = secant_solver(egg_wrapper_2x,7.75,8.25);
+    x_range = sort([s_root_x, s_root_x_2]);
+    s_root_y = secant_solver(egg_wrapper_2y,2.25,2.75);
+    s_root_y_2 = secant_solver(egg_wrapper_2y,4.25,4.75);
+    y_range = sort([s_root_y, s_root_y_2]);
 end
 %% WRAPPER X
 %wrapper function that calls egg_func
