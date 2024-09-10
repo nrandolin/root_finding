@@ -3,7 +3,7 @@ solver_flag = 3;
 fun = @test_function;
 
 x_guess0 =1;
-guess_list1 = linspace(1,3,100);
+guess_list1 = linspace(-3,2,100);
 guess_list2 = linspace(3,6,100);
 filter_list = 1;
 
@@ -98,58 +98,58 @@ elseif solver_flag == 2
         
         end  
 
-
 % Secant
     elseif solver_flag == 3
         p_actual = (1 +sqrt(5))/2;
         k_actual = (1 +sqrt(5))/2;
-          global input_list;
-    %number of trials we would like to perform
-    num_iter = length(guess_list1);
-    %list for the left and right guesses that we would like
-    %to use each trial. These guesses have all been chosen
-    %so that each trial will converge to the same root
-    %because the root is somewhere between -5 and 5.
-    x_left_list = guess_list1;
-    x_right_list = guess_list2;
-    %list of estimate at current iteration (x_{n})
-    %compiled across all trials
-    x_current_list = [];
-    %list of estimate at next iteration (x_{n+1})
-    %compiled across all trials
-    x_next_list = [];
-    %keeps track of which iteration (n) in a trial
-    %each data point was collected from
-    index_list = [];
-    %loop through each trial
-    for n = 1:num_iter
-        %pull out the left and right guess for the trial
-        x_left = x_left_list(n);
-        x_right = x_right_list(n);
-        %clear the input_list global variable
-        input_list = [];
-        %run the bisection solver
-        global_secant(fun, x_left, x_right)
-        %at this point, input_list will be populated with the values that
-        %the solver called at each iteration.
-        %In other words, it is now [x_1,x_2,...x_n-1,x_n]
-        %append the collected data to the compilation
-        x_current_list = [x_current_list,input_list(1:end-1)];
-        x_next_list = [x_next_list,input_list(2:end)];
-        index_list = [index_list,1:length(input_list)-1];
-    end
-    %At this point, x_current_list corresponds to many many
-    %measurements of x_{n} across many trials
-    %and x_next_list corresponds to many many measurements of
-    %the corresponding value of x_{n+1} across many trials
-    %this is the data the you want to clean and analaze
-    
-    else
-        print "Unknown method"
-        return
-    end
+        global input_list
+        %number of trials we would like to perform
+        num_iter = length(guess_list1);
+        %list for the left and right guesses that we would like
+        %to use each trial. These guesses have all been chosen
+        %so that each trial will converge to the same root
+        %because the root is somewhere between -5 and 5.
+        x_left_list = guess_list1;
+        x_right_list = guess_list2;
+        %list of estimate at current iteration (x_{n})
+        %compiled across all trials
+        x_current_list = [];
+        %list of estimate at next iteration (x_{n+1})
+        %compiled across all trials
+        x_next_list = [];
+        %keeps track of which iteration (n) in a trial
+        %each data point was collected from
+        index_list = [];
+        %loop through each trial
+        for n = 1:num_iter
+            %pull out the left and right guess for the trial
+            x_left = x_left_list(n)
+            x_right = x_right_list(n)
+            %clear the input_list global variable
+            input_list = [];
+            %run the bisection solver
+            global_secant(fun, x_left, x_left+.01)
+     
+            %at this point, input_list will be populated with the values that
+            %the solver called at each iteration.
+            %In other words, it is now [x_1,x_2,...x_n-1,x_n]
+            %append the collected data to the compilation
+            x_current_list = [x_current_list,input_list(1:end-1)];
+            x_next_list = [x_next_list,input_list(2:end)];
+            index_list = [index_list,1:length(input_list)-1];
+        end
+        %At this point, x_current_list corresponds to many many
+        %measurements of x_{n} across many trials
+        %and x_next_list corresponds to many many measurements of
+        %the corresponding value of x_{n+1} across many trials
+        %this is the data the you want to clean and analaze
+        
+        else
+            print "Unknown method"
+            return
+        end
 
-% Error filtration
+    % Error filtration
     error_list0 = abs(x_current_list - x_root);
     error_list1 = abs(x_next_list - x_root);
     
