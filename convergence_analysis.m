@@ -79,7 +79,7 @@ x_guess0, guess_list1, guess_list2, filter_list)
     elseif solver_flag == 2
         % actual p and k
         p_actual = 2;
-        [dfdx,d2fdx2] = approximate_derivative(fun,x_root);
+        [dfdx, d2fdx2] = approximate_derivative(fun,x_root);
         k_actual = d2fdx2/(2*dfdx);
 % Do the global variable thing
         num_iter = length(guess_list1);
@@ -98,6 +98,9 @@ x_guess0, guess_list1, guess_list2, filter_list)
             x_next_list = [x_next_list,input_list(2:end)];
             index_list = [index_list,1:length(input_list)-1];
         end
+
+
+
         % Secant
     elseif solver_flag == 3
         p_actual = (1 +sqrt(5))/2;
@@ -146,7 +149,6 @@ x_guess0, guess_list1, guess_list2, filter_list)
         print "Unknown method"
         return
     end
-
 
     error_list0 = abs(x_current_list - x_root);
     error_list1 = abs(x_next_list - x_root);
@@ -278,7 +280,7 @@ function global_newton(func, x_0)
     %initialize guesses for bisection solver
 
     %run the bisection solver
-    x_root = newton_solver(fun,x0);
+    x_root = newton_solver(func,x0);
 
     %at this point, input_list will be populated with the input arguments
     %that bisection_solver used to call test_function
@@ -291,15 +293,15 @@ end
 
 %% newton solver
 function z = newton_solver(fun, x0)
-    difference = 1;
+       difference = 1;
     x1 = x0;
     while difference > 10^-14
         x0 = x1;
-        y_val = fun(x0); 
-        if abs(y_val(2)) < 10^-14
+        [y_val,d_val] = fun(x0); 
+        if abs(d_val) < 10^-14
             quit
         else
-            x1 = x0 - y_val(1)/ y_val(2);
+            x1 = x0 - y_val/ d_val;
             difference = abs(x1 - x0);
         end 
     end
@@ -343,8 +345,8 @@ function x = secant_solver(fun, x0, x1)
     end
     x = x2;
 end
-%% Test Function
-function output = test_function(x)
+    %% Test Function
+function [f_val, dfdx] = test_function(x)
     %declare input_list as a global variable
     global input_list;
 
@@ -354,5 +356,6 @@ function output = test_function(x)
 
     %perform the rest of the computation to generate output
     %I just put in a quadratic function as an example
-    output = (x.^3)/100 - (x.^2)/8 + 2*x + 6*sin(x/2+6) -.7 - exp(x/6);
+    f_val = (x.^3)/100 - (x.^2)/8 + 2*x + 6*sin(x/2+6) -.7 - exp(x/6);
+    dfdx = 3*(x.^2)/100 - 2*x/8 + 2 +(6/2)*cos(x/2+6) - exp(x/6)/6;
 end
