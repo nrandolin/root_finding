@@ -5,7 +5,7 @@ x0 = 5; y0 = 5; theta = pi/6;
 [x_range,y_range] = compute_bounding_box(x0,y0,theta,egg_params);
 figure;
 eggxample01()
-rectangle('Position',[x_range(1) y_range(1) x_range(2)-x_range(1) y_range(2)]);
+rectangle('Position',[x_range(1) y_range(1) x_range(2) y_range(2)]);
 
 %% WRAPPER 2
 %set the oval hyper-parameters (MOVED TO BOUNDING BOX)
@@ -73,8 +73,8 @@ function [x_range,y_range] = compute_bounding_box(x0,y0,theta,egg_params)
     %compute the value of s for which the corresponding point on the oval
     %has an x-coordinate of zero
     egg_wrapper_2y = @(s) egg_wrapper_y(s,x0,y0,theta,egg_params);
-    s_root_x = secant_solver(egg_wrapper_2x,2,2.75); % WILL CRASH IF DIFFERENCE BETWEEN GUESSES IS >=1
-    s_root_x_2 = secant_solver(egg_wrapper_2x,7.75,8.25);
+    s_root_x = secant_solver(egg_wrapper_2x,1.5,2.25); % WILL CRASH IF DIFFERENCE BETWEEN GUESSES IS >=1
+    s_root_x_2 = secant_solver(egg_wrapper_2x,6,6.5);
     x_range = sort([s_root_x, s_root_x_2]);
     s_root_y = secant_solver(egg_wrapper_2y,2.25,2.75);
     s_root_y_2 = secant_solver(egg_wrapper_2y,4.25,4.75);
