@@ -105,7 +105,7 @@ function [x_min, x_max] = egg_min_max(s,x0,y0,theta,egg_params)
     for n = 1:100
         [V, G] = egg_func(s,x0,y0,theta,egg_params);
         s = s + 0.01;
-        x_val = V(1);
+        x_val = G(1);
         x_coords = [x_coords, x_val];
         x_min = min(x_coords);
         x_max = max(x_coords);
@@ -159,49 +159,4 @@ function [V, G] = egg_func(s,x0,y0,theta,egg_params)
     %compute position and gradient for rotated + translated oval
     V = R*[x;y]+[x0*ones(1,length(theta));y0*ones(1,length(theta))];
     G = R*[dx;dy];
-end
-%% SECANT SOLVER
-function x = secant_solver(fun, x0, x1)
-    y0 = fun(x0);
-    y1 = fun(x1);
-    difference = 1;
-    while difference > 10^-14
-        if abs(y1-y0) < 10^-14
-            quit
-        else
-        x2 = x1-y1*((x1-x0)/(y1-y0));
-        difference = abs(x2-x1);
-        
-        x0 = x1;
-        y0 = y1;
-
-        x1 = x2;
-        y1 = fun(x1);
-        end
-    end
-    x = x2;
-end
-
-%% BISECTION SOLVER
-function x = bisection_solver(fun,x_left,x_right)
-    x_mid = 10;
-    c = 11;
-    while abs(x_mid - c) > 10^-14
-        if fun(x_left) * fun(x_right) > 0 
-            quit
-        else
-            x_mid = (x_left + x_right) / 2;
-            if fun(x_left) * fun(x_mid) < 0
-                x_right = x_mid;
-                c = (x_left + x_right) / 2;
-            elseif fun(x_right) * fun(x_mid) < 0
-                x_left = x_mid;
-                c = (x_right + x_left) / 2;
-            elseif fun(x_mid) == 0
-                c = x_mid;
-                break
-            end
-        end
-    end
-    x = c;
 end
