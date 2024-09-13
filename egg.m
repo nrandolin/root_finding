@@ -13,6 +13,11 @@ hold on
 [xmin, xmax] = LR_bounding(x0, y0, theta, egg_params);
 [ymin, ymax] = TB_bounding(x0, y0, theta, egg_params);
 plot([xmin, xmax, xmax, xmin, xmin], [ymin ymin, ymax, ymax, ymin])
+%%
+traj_fun = @egg_trajectory01
+y_ground = ymin
+x_wall = xmax
+[t_ground,t_wall] = collision_func(@egg_trajectory01, egg_params, y_ground, x_wall)
 
 %% EGG CALL
 %template for how to properly call egg_func
@@ -72,6 +77,13 @@ function [ymin, ymax] = TB_bounding(x0, y0, theta, egg_params)
     ymin = min(y_list);
     ymax = max(y_list);
 end
+
+%% BOUNDING BOX
+function [x_range, y_range] = bounding_box(x0, y0, theta, egg_params)
+    x_range = LR_bounding(x0, y0, theta, egg_params);
+    y_range = TB_bounding(x0, y0, theta, egg_params);
+end
+
 %% WRAPPER X
 %wrapper function that calls egg_func
 %and only returns the x coordinate of the
@@ -89,6 +101,52 @@ end
 function y_out = egg_wrapper_y(s,x0,y0,theta,egg_params)
     [V, G] = egg_func(s,x0,y0,theta,egg_params);
     y_out = G(2);
+end
+%% PARABOLIC TRAJECTORY
+function [x0,y0,theta] = egg_trajectory01(t)
+    x0 = 7*t + 8;
+    y0 = -6*t.^2 + 20*t + 6;
+    theta = 5*t;
+end
+%% WRAPPER?
+function x_traj = x_bounding_traj(t, traj_fun, egg_params)
+    [x0,y0,theta] = traj_fun(t);
+    [x_range,y_range] = bounding_box(x0, y0, theta, egg_params);
+    x_traj = max(x_range);
+end
+%% WRAPPER?
+function y_traj = y_bounding_traj(t, traj_fun, egg_params)
+    [x0,y0,theta] = traj_fun(t);
+    [x_range,y_range] = bounding_box(x0, y0, theta, egg_params);
+    y_traj = y_range(1);
+end
+%% COLLISION
+%Function that computes the collision time for a thrown egg
+%INPUTS:
+%traj_fun: a function that describes the [x,y,theta] trajectory
+% of the egg (takes time t as input)
+%egg_params: a struct describing the hyperparameters of the oval
+%y_ground: height of the ground
+%x_wall: position of the wall
+%OUTPUTS:
+%t_ground: time that the egg would hit the ground
+%t_wall: time that the egg would hit the wall
+
+function [t_ground,t_wall] = collision_func(traj_fun, egg_params, y_ground, x_wall)
+    x_traj_wrapper_2 = @(t) x_bounding_traj(t, traj_fun, egg_params) - x_wall;
+    y_traj_wrapper_2 = @(t) y_bounding_traj(t, traj_fun, egg_params) - y_ground;
+%     t_ground = bisection_solver(y_traj_wrapper_2, 0, 5)
+%     t_wall = 2
+    if bisection_solver(x_traj_wrapper_2, 0, 10) ~= 0
+        t_ground = bisection_solver(y_traj_wrapper_2, 0, 5);
+        t_wall = "NULL";
+    elseif bisection_solver(y_traj_wrapper, 0, 5) ~= 0
+        t_ground = "NULL";
+        t_wall = bisection_solver(x_traj_wrapper_2, 0, 10);
+    else
+        t_ground = bisection_solver(y_traj_wrapper_2, 0, 5);
+        t_wall = bisection_solver(x_traj_wrapper_2, 0, 10);
+    end
 end
 %% EGG FUNCTION
 %This function generates the parametric curve describing an oval
