@@ -1,7 +1,7 @@
 egg_params = struct();
 egg_params.a = 3; egg_params.b = 2; egg_params.c = .15;
 %specify the position and orientation of the egg
-x0 = 10; y0 = 10; theta = pi/6;
+x0 = 5; y0 = 5; theta = pi/6;
 figure;
 %compute the perimeter of the egg
 % hold on; axis equal; axis square
@@ -13,7 +13,7 @@ figure;
 % [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params)
 % plot([xmin, xmax, xmax, xmin, xmin], [ymin ymin, ymax, ymax, ymin])
 % hold off
-animation_example(x0,y0,theta,egg_params,@egg_trajectory01,30,0)
+animation_example(x0,y0,theta,egg_params,@egg_trajectory01,30,5)
 %%
 traj_fun = @egg_trajectory01
 y_ground = 2
@@ -119,7 +119,7 @@ end
 function y_traj = y_bounding_traj(t, traj_fun, egg_params)
     [x0,y0,theta] = traj_fun(t);
     [~ ,y_range] = bounding_box(x0, y0, theta, egg_params);
-    y_traj = y_range(1);
+    y_traj = min(y_range);
 end
 %% COLLISION
 %Function that computes the collision time for a thrown egg
@@ -136,8 +136,6 @@ end
 function [t_ground,t_wall] = collision_func(traj_fun, egg_params, y_ground, x_wall)
     x_traj_wrapper_2 = @(t) x_bounding_traj(t, traj_fun, egg_params) - x_wall;
     y_traj_wrapper_2 = @(t) y_bounding_traj(t, traj_fun, egg_params) - y_ground;
-%     t_ground = bisection_solver(y_traj_wrapper_2, 0, 5)
-%     t_wall = 2
     if bisection_solver(x_traj_wrapper_2, 0, 10) ~= 0
         t_ground = bisection_solver(y_traj_wrapper_2, 0, 5);
         t_wall = "NULL";
@@ -180,10 +178,10 @@ function animation_example(x0,y0,theta,egg_params,traj_fun,x_wall,y_ground)
         set(egg_plot,'xdata',x_plot,'ydata',y_plot);
         %update the actual plotting window
         drawnow;
-        if t == t_ground || t == t_wall
-            pause(2)
-            break
-        end
+%         if t == t_ground || t == t_wall
+%             pause(2)
+%             break
+%         end
     end
 end
 %% EGG FUNCTION
