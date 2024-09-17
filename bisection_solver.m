@@ -8,7 +8,7 @@ function x = bisection_solver(fun,x_left,x_right)
     while abs(x_mid - c) > 10^-14
         % If both are same sign, quit
         if y_left * y_right > 0 
-            disp("Both inputs are positive/negative!");
+            disp("Both (bisection) inputs are positive/negative!");
             x = 0;
             return 
         else
