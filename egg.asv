@@ -13,8 +13,10 @@ figure;
 % [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params)
 % plot([xmin, xmax, xmax, xmin, xmin], [ymin ymin, ymax, ymax, ymin])
 % hold off
-
-animation_example(x0,y0,theta,egg_params,@egg_trajectory01,10,0)
+t = 0:0.1:10;
+x_bounding_traj(t, @egg_trajectory01, egg_params)
+%collision_func(@egg_trajectory01, egg_params, 10, 0)
+%animation_example(x0,y0,theta,egg_params,@egg_trajectory01,10,0)
 
 %% EGG CALL
 %template for how to properly call egg_func
@@ -103,7 +105,7 @@ end
 function [x0,y0,theta] = egg_trajectory01(t)
     x0 = 10*t -10;
     y0 = -6*t.^2 + 20*t + 3;
-    theta = 5*t;
+    theta = 2*t;
 end
 %% BOUNDING WRAPPER X
 function x_traj = x_bounding_traj(t, traj_fun, egg_params)
