@@ -1,5 +1,5 @@
 %% Function Start
-function convergence_analysis(solver_flag, fun, ...
+function [p_predict, k_predict, p, k] = convergence_analysis(solver_flag, fun, ...
 x_guess0, guess_list1, guess_list2, filter_list)
     %Example template for analysis function
     %INPUTS:
@@ -34,16 +34,17 @@ x_guess0, guess_list1, guess_list2, filter_list)
         input_list = [];
         %run the solver
         if solver_flag == 1 % bisection
-            p_actual = 1;
+            p_predict = 1;
+            k_predict = 1/2;
             global_bisection(fun, x_left, x_right)
         elseif solver_flag == 2 % newton
-            p_actual = 2;
+            p_predict = 2;
             [dfdx,d2fdx2] = approximate_derivative(fun,x_root);
-            k_actual = d2fdx2/(2*dfdx);
+            k_predict = d2fdx2/(2*dfdx);
             global_newton(fun, x_left)
         elseif solver_flag == 3 % secant
-            p_actual = (1 +sqrt(5))/2;
-            k_actual = (1 +sqrt(5))/2;
+            p_predict = (1 +sqrt(5))/2;
+            k_predict = (1 +sqrt(5))/2;
             global_secant(fun, x_left, x_left+0.1)
         elseif solver_flag == 4 % newton
             fzero(fun, x_left)

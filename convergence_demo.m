@@ -8,7 +8,7 @@ x_guess0 = 1;
 guess_list1 = linspace(-10,-5,1000);
 guess_list2 = linspace(2,7,1000);
     
-convergence_analysis(solver_flag, fun, ...
+[p_precit, k_precidt, p, k] = convergence_analysis(solver_flag, fun, ...
 x_guess0, guess_list1, guess_list2, filter_list)
 
 hold off
@@ -23,7 +23,7 @@ hold off
 % guess_list1 = linspace(-1,3,100);
 % guess_list2 = linspace(2,7,1000);
 %     
-% convergence_analysis(solver_flag, fun, ...
+% [p_precit, k_precidt, p, k] = convergence_analysis(solver_flag, fun, ...
 % x_guess0, guess_list1, guess_list2, filter_list)
 % 
 % hold off
@@ -38,7 +38,7 @@ hold off
 % guess_list1 = linspace(-10,-5,1000);
 % guess_list2 = linspace(2,7,1000);
 %     
-% convergence_analysis(solver_flag, fun, ...
+% [p_precit, k_precidt, p, k] = convergence_analysis(solver_flag, fun, ...
 % x_guess0, guess_list1, guess_list2, filter_list)
 % 
 % hold off
@@ -53,7 +53,7 @@ hold off
 % guess_list1 = linspace(-2,3,1000);
 % guess_list2 = linspace(2,7,1000);
 %     
-% convergence_analysis(solver_flag, fun, ...
+% [p_precit, k_precidt, p, k] = convergence_analysis(solver_flag, fun, ...
 % x_guess0, guess_list1, guess_list2, filter_list)
 % 
 % hold off
