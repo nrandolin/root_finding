@@ -48,6 +48,8 @@ x_guess0, guess_list1, guess_list2, filter_list)
             global_secant(fun, x_left, x_left+0.1)
         elseif solver_flag == 4 % newton
             fzero(fun, x_left)
+            p_predict = 0;
+            k_predict = 0;
         else
             print "Unknown method"
             return
