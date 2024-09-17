@@ -13,12 +13,7 @@ figure;
 % [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params)
 % plot([xmin, xmax, xmax, xmin, xmin], [ymin ymin, ymax, ymax, ymin])
 % hold off
-animation_example(x0,y0,theta,egg_params,@egg_trajectory01,30,5)
-%%
-traj_fun = @egg_trajectory01
-y_ground = 2
-x_wall = 30
-[t_ground,t_wall] = collision_func(@egg_trajectory01, egg_params, y_ground, x_wall)
+animation_example(x0,y0,theta,egg_params,@egg_trajectory01,10,10)
 
 %% EGG CALL
 %template for how to properly call egg_func
@@ -107,7 +102,7 @@ end
 function [x0,y0,theta] = egg_trajectory01(t)
     x0 = 7*t + 8;
     y0 = -6*t.^2 + 20*t + 6;
-    theta = 0.05*t;
+    theta = 0.1*t;
 end
 %% BOUNDING WRAPPER X
 function x_traj = x_bounding_traj(t, traj_fun, egg_params)
@@ -136,15 +131,15 @@ end
 function [t_ground,t_wall] = collision_func(traj_fun, egg_params, y_ground, x_wall)
     x_traj_wrapper_2 = @(t) x_bounding_traj(t, traj_fun, egg_params) - x_wall;
     y_traj_wrapper_2 = @(t) y_bounding_traj(t, traj_fun, egg_params) - y_ground;
-    if bisection_solver(x_traj_wrapper_2, 0, 10) ~= 0
-        t_ground = bisection_solver(y_traj_wrapper_2, 0, 5);
-        t_wall = "NULL";
-    elseif bisection_solver(y_traj_wrapper, 0, 5) ~= 0
-        t_ground = "NULL";
-        t_wall = bisection_solver(x_traj_wrapper_2, 0, 10);
+    if bisection_solver(y_traj_wrapper_2, -5, 5) ~= 0
+        t_ground = NaN;
+        t_wall = bisection_solver(x_traj_wrapper_2, -5, 5);
+    elseif bisection_solver(x_traj_wrapper_2, -5, 5) ~= 0
+        t_ground = bisection_solver(y_traj_wrapper_2, -5, 5);
+        t_wall = NaN;
     else
-        t_ground = bisection_solver(y_traj_wrapper_2, 0, 5);
-        t_wall = bisection_solver(x_traj_wrapper_2, 0, 10);
+        t_ground = bisection_solver(y_traj_wrapper_2, -5, 5);
+        t_wall = bisection_solver(x_traj_wrapper_2, -5, 5);
     end
 end
 %% ANIMATION
@@ -159,8 +154,8 @@ function animation_example(x0,y0,theta,egg_params,traj_fun,x_wall,y_ground)
     y_coords = V_list(2,:);
     egg_plot = plot(x_coords, y_coords,'k');
     hold on
-    [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params);
-    [t_ground,t_wall] = collision_func(traj_fun, egg_params, y_ground, x_wall)
+%     [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params);
+    [t_ground,t_wall] = collision_func(traj_fun, egg_params, x_wall, y_ground)
     for t=0:.001:10
         [V_list, G_list] = egg_func(linspace(0,1,100),x0,y0,theta,egg_params);
         [x_shift, y_shift, theta_shift] = traj_fun(t);
@@ -178,10 +173,11 @@ function animation_example(x0,y0,theta,egg_params,traj_fun,x_wall,y_ground)
         set(egg_plot,'xdata',x_plot,'ydata',y_plot);
         %update the actual plotting window
         drawnow;
-%         if t == t_ground || t == t_wall
-%             pause(2)
-%             break
-%         end
+        if abs(t - t_ground) < 0.001 || abs(t - t_wall) < 0.001
+            pause(2)
+            break
+        end
+        t
     end
 end
 %% EGG FUNCTION
