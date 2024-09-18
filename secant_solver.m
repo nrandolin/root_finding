@@ -5,7 +5,7 @@ function x = secant_solver(fun, x0, x1)
     difference = 1;
     while difference > 10^-14
         if abs(y1-y0) < 10^-14
-            quit
+            break
         else
         x2 = x1-y1*((x1-x0)/(y1-y0));
         difference = abs(x2-x1);
