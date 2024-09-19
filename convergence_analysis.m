@@ -98,4 +98,6 @@ x_guess0, guess_list1, guess_list2, filter_list)
     fit_line_y = k*fit_line_x.^p;
     %plot on a loglog plot.
     loglog(fit_line_x,fit_line_y,'k-','linewidth',2)
+    xlabel("x")
+    ylabel("f(x)")
 end
