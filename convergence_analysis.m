@@ -13,7 +13,7 @@ x_guess0, guess_list1, guess_list2, filter_list)
     % if guess_list2 is not needed, then set to zero in input
     %filter_list: a list of constants used to filter the collected data
 
-    % Define initial variables
+    % Define initial variables 
     x_root = fzero(fun, x_guess0); % Known zero
     global input_list; % list of input values (error) from all iterations
     num_iter = length(guess_list1); % number of iterations
@@ -60,7 +60,7 @@ x_guess0, guess_list1, guess_list2, filter_list)
         x_next_list = [x_next_list,input_list(2:end)];
         index_list = [index_list,1:length(input_list)-1];
     end
-
+%%
     % Calculte Error
     error_list0 = abs(x_current_list - x_root);
     error_list1 = abs(x_next_list - x_root);
