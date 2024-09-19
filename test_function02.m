@@ -8,6 +8,6 @@ function [f_val, dfdx] = test_function02(x)
 
     %perform the rest of the computation to generate output
     %I just put in a quadratic function as an example
-    f_val = (x-5).^2;
-    dfdx = 2.*(x-5);
+    f_val = (x-30.879).^2;
+    dfdx = 2*(x-30.879);
 end
