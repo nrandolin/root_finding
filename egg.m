@@ -1,121 +1,101 @@
-egg_params = struct();
-egg_params.a = 3; egg_params.b = 2; egg_params.c = .15;
-%specify the position and orientation of the egg
-x0 = 5; y0 = 5; theta = pi/6;
-figure;
-%compute the perimeter of the egg
-% hold on; axis equal; axis square
-% axis([0,10,0,10])
-% [V_list, G_list] = egg_func(linspace(0,1,100),x0,y0,theta,egg_params);
-% %plot the perimeter of the egg
-% plot(V_list(1,:),V_list(2,:),'k');
-% hold on
-% [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params)
-% plot([xmin, xmax, xmax, xmin, xmin], [ymin ymin, ymax, ymax, ymin])
-% hold off
+%% FULL EGG ANIMATION
+function egg()
 
-animation_example(x0,y0,theta,egg_params,@egg_trajectory01,10,0)
-
-%% EGG CALL
-%template for how to properly call egg_func
-%also provides example for how to interpret outputs
-function eggxample01()
-    %set the oval hyper-parameters
+    % specify parameters to make egg
     egg_params = struct();
     egg_params.a = 3; egg_params.b = 2; egg_params.c = .15;
-    %specify the position and orientation of the egg
-    x0 = 5; y0 = 5; theta = pi/6;
-    %set up the axis
-    hold on; axis equal; axis square
-    axis([0,10,0,10])
-    %plot the origin of the egg frame
-    plot(x0,y0,'ro','markerfacecolor','r');
-    %compute the perimeter of the egg
-    [V_list, G_list] = egg_func(linspace(0,1,100),x0,y0,theta,egg_params);
-    %plot the perimeter of the egg
-    plot(V_list(1,:),V_list(2,:),'k');
-    %compute a single point along the egg (s=.8)
-    %as well as the tangent vector at that point
-    [V_single, G_single] = egg_func(.8,x0,y0,theta,egg_params);
-    %plot this single point on the egg
-    plot(V_single(1),V_single(2),'ro','markerfacecolor','r');
-    %plot this tangent vector on the egg
-    vector_scaling = .1;
-    tan_vec_x = [V_single(1),V_single(1)+vector_scaling*G_single(1)];
-    tan_vec_y = [V_single(2),V_single(2)+vector_scaling*G_single(2)];
-    plot(tan_vec_x,tan_vec_y,'g')
-    hold on;
+
+    % animate collision of egg and save video
+    animation(egg_params,@egg_trajectory01,10,0)
 end
 %% LEFT RIGHT BOUNDS
-function [xmin, xmax] = LR_bounding(x0, y0, theta, egg_params)
+function [xmin, xmax, s_root_x] = LR_bounding(x0, y0, theta, egg_params)
+
+    % get one point on the egg curve
     egg_wrapper_2x = @(s) egg_wrapper_x(s,x0,y0,theta,egg_params);
     s_guess_list = [0, 1/3, 2/3];
     x_list = zeros(length(s_guess_list), 1);
+
+    % find x-coordinates along the edge of the egg
     for n=1:length(s_guess_list)
         s_guess = s_guess_list(n);
         s_root_x = secant_solver(egg_wrapper_2x, s_guess, s_guess+1e-5);
         [V,G] = egg_func(s_root_x, x0, y0, theta, egg_params);
         x_list(n) = V(1);
     end
+
+    % determine the upper and lower x bounds
     xmin = min(x_list);
     xmax = max(x_list);
 end
 %% TOP BOTTOM BOUNDS
-function [ymin, ymax] = TB_bounding(x0, y0, theta, egg_params)
+function [ymin, ymax, s_root_y] = TB_bounding(x0, y0, theta, egg_params)
+
+    % get one point on the egg curve
     egg_wrapper_2y = @(s) egg_wrapper_y(s,x0,y0,theta,egg_params);
     s_guess_list = [0, 1/3, 2/3];
     y_list = zeros(length(s_guess_list), 1);
+
+    % find y-coordinates along the edge of the egg
     for n=1:length(s_guess_list)
         s_guess = s_guess_list(n);
         s_root_y = secant_solver(egg_wrapper_2y, s_guess, s_guess+1e-5);
         [V,G] = egg_func(s_root_y, x0, y0, theta, egg_params);
         y_list(n) = V(2);
     end
+
+    % determine the upper and lower y bounds
     ymin = min(y_list);
     ymax = max(y_list);
 end
 
 %% BOUNDING BOX
 function [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params)
+
+    % find min and max x and y values
     [x_min, x_max] = LR_bounding(x0, y0, theta, egg_params);
     [y_min, y_max] = TB_bounding(x0, y0, theta, egg_params);
 end
 
 %% WRAPPER X
-%wrapper function that calls egg_func
-%and only returns the x coordinate of the
-%point on the perimeter of the egg
-%(single output)
 function x_out = egg_wrapper_x(s,x0,y0,theta,egg_params)
+
     [V, G] = egg_func(s,x0,y0,theta,egg_params);
+
+    % x-coordinate of single point on egg curve
     x_out = G(1);
 end
 %% WRAPPER Y
-%wrapper function that calls egg_func
-%and only returns the x coordinate of the
-%point on the perimeter of the egg
-%(single output)
 function y_out = egg_wrapper_y(s,x0,y0,theta,egg_params)
+
     [V, G] = egg_func(s,x0,y0,theta,egg_params);
+
+    % y-coordinate of single point on egg curve
     y_out = G(2);
 end
 %% PARABOLIC TRAJECTORY
 function [x0,y0,theta] = egg_trajectory01(t)
+
+    % functions to determine the trajectory of the egg
     x0 = 10*t -10;
     y0 = -6*t.^2 + 20*t + 3;
-    theta = 5*t;
+    theta = 2*t;
 end
 %% BOUNDING WRAPPER X
 function x_traj = x_bounding_traj(t, traj_fun, egg_params)
     [x0,y0,theta] = traj_fun(t);
-    [x_range, ~] = bounding_box(x0, y0, theta, egg_params);
-    x_traj = max(x_range);
+    [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params);
+
+    % x-coordinate of furthest (rightmost) point on the bounding box at given time
+    x_traj = x_max;
 end
 %% BOUNDING WRAPPER Y
 function y_traj = y_bounding_traj(t, traj_fun, egg_params)
     [x0,y0,theta] = traj_fun(t);
-    [~ ,y_range] = bounding_box(x0, y0, theta, egg_params);
-    y_traj = min(y_range);
+    [x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params);
+
+    % y-coordinate of lowest point on the bounding box at given time
+    y_traj = y_min;
 end
 %% COLLISION
 %Function that computes the collision time for a thrown egg
@@ -130,17 +110,32 @@ end
 %t_wall: time that the egg would hit the wall
 
 function [t_ground,t_wall] = collision_func(traj_fun, egg_params, x_wall, y_ground)
+
+    % find where distance between the wall/ground and bounding box is zero
     x_traj_wrapper_2 = @(t) x_bounding_traj(t, traj_fun, egg_params) - x_wall;
     y_traj_wrapper_2 = @(t) y_bounding_traj(t, traj_fun, egg_params) - y_ground;
 
-    t_ground = bisection_solver(y_traj_wrapper_2, 1e-4, 10);
-    t_wall = bisection_solver(x_traj_wrapper_2, 1e-4, 10);
+    % find the time to collide with the ground/wall using bisection method
+    t_ground = bisection_solver(y_traj_wrapper_2, 0, 10);
+    t_wall = bisection_solver(x_traj_wrapper_2, 0, 10); 
 end
 %% ANIMATION
-%Short example demonstrating how to create a MATLAB animation
-%In this case, a square moving along an elliptical path
-function animation_example(x0,y0,theta,egg_params,traj_fun,x_wall,y_ground)
+function animation(egg_params,traj_fun,x_wall,y_ground)
+    
+    % Download path for egg animation
+    mypath1 = 'C:\Users\ldao\Downloads\';
+    fname='egg_animation.avi';
+    input_fname = [mypath1,fname];
 
+    % create a videowriter, which will write frames to the animation file
+    writerObj = VideoWriter(input_fname);
+
+    % must call open before writing any frames
+    open(writerObj);
+    
+    % make egg and plot
+    [x0,y0,theta] = traj_fun(0);
+    fig1 = figure(1);
     hold on; axis equal; axis square
     axis([-20,40,-20,40])
     [V_list, G_list] = egg_func(linspace(0,1,100),x0,y0,theta,egg_params);
@@ -148,36 +143,59 @@ function animation_example(x0,y0,theta,egg_params,traj_fun,x_wall,y_ground)
     y_coords = V_list(2,:);
     egg_plot = plot(x_coords, y_coords,'k');
     hold on
-%     [t_ground,t_wall] = collision_func(traj_fun, egg_params, x_wall, y_ground)
-%     stop = min([t_wall,t_ground])
-%     for t=0:.01:stop
-    for t=0:.01:10
-        [x_shift, y_shift, theta_shift] = traj_fun(t);
+
+    % determine the time the egg will collide
+    [t_ground,t_wall] = collision_func(traj_fun, egg_params, x_wall, y_ground);
+    stop = min([t_wall,t_ground]);
+
+    % plot ground and wall
+    yline(y_ground);
+    xline(x_wall);
+
+    % plot egg moving along trajectory until collision
+    for t=0:.01:3
+
+        % trajectory path
+        [x_shift, y_shift, theta_shift] = traj_fun(min(t, stop));
         
         [V_list, G_list] = egg_func(linspace(0,1,100),x_shift,y_shift,theta_shift,egg_params);
+
+        %[x_min, x_max, y_min, y_max] = bounding_box(x0, y0, theta, egg_params);
         
+        % find coordinates of egg
         x_coords = V_list(1,:);
         y_coords = V_list(2,:);
-%         position_x = x_shift;
-%         position_y = y_shift;
-%         theta = theta + theta_shift;
-        %compute positions of square vertices (in world frame)
-%         x_plot = (x_coords+position_x);
-%         y_plot = (y_coords+position_y);
-        x_plot = (x_coords);
-        y_plot = (y_coords);
-        yline(y_ground)
-        xline(x_wall)
-        %update the coordinates of the square plot
-        set(egg_plot,'xdata',x_plot,'ydata',y_plot);
-        %update the actual plotting window
+    
+        % plot egg
+        set(egg_plot,'xdata',x_coords,'ydata',y_coords);
         drawnow;
-%         if t >= t_ground|| t >= t_wall
-%             pause(2)
-%             break
-%         end
-%         t;
+        hold on
+
+        % plot point where egg collides
+        if t >= stop
+            % collision with ground
+            if t_ground < t_wall
+                y_stop = y_bounding_traj(stop, traj_fun, egg_params);
+                [x_stop, y_pt, theta] = traj_fun(stop);
+                plot(x_stop, y_stop, 'o', 'MarkerFaceColor', 'r')
+            % collision with wall
+            elseif t_wall < t_ground
+                x_stop = x_bounding_traj(stop, traj_fun, egg_params);
+                [x_pt, y_stop, theta] = traj_fun(stop);
+                plot(x_stop, y_stop, 'o', 'MarkerFaceColor', 'r')
+            end
+        end
+
+        current_frame = getframe(fig1);
+
+        % write the frame to the video
+        writeVideo(writerObj,current_frame);
+
     end
+    
+    % must call close after all frames are written
+    close(writerObj);
+
 end
 %% EGG FUNCTION
 %This function generates the parametric curve describing an oval
