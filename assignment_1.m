@@ -6,7 +6,7 @@ test_pair01 = @(x)[((x.^3)/100 - (x.^2)/8 + 2*x + 6*sin(x/2+6) -.7 - exp(x/6)), 
 test_func_1 = @(x)[(x.^2) - 9, (2*x)];
 test_func = @(x) (x.^2) - 9;
 
-test_bi = bisection_solver(test_func01, 0, 10);
+[test_bi, bi_count] = bisection_solver(test_func01, 0.4, 1);
 % plot bisection
 figure()
 fplot(test_func01, [-10 35])
@@ -18,7 +18,7 @@ plot(test_bi, test_func01(test_bi), 'd')
 title("Bisection Root Solver Output")
 hold off
 
-test_newt = newton_solver(test_pair01, 0.717);
+[test_newt, newt_count] = newton_solver(test_pair01, 2);
 % plot newton
 figure()
 fplot(test_func01, [-10 35])
@@ -30,7 +30,7 @@ plot(test_newt, test_func01(test_newt), 'd')
 title("Newton Root Solver Output")
 hold off
 
-test_sec = secant_solver(test_func01, 1, 4);
+[test_sec, sec_count] = secant_solver(test_func01, -0.5, 1.5);
 % plot secant
 figure()
 fplot(test_func01, [-10 35])
@@ -43,9 +43,10 @@ title("Secant Root Solver Output")
 hold off
 
 
-function x = bisection_solver(fun,x_left,x_right)
+function [x, count] = bisection_solver(fun,x_left,x_right)
     x_mid = 10;
     c = 11;
+    count = 0;
     while abs(x_mid - c) > 10^-14
         if fun(x_left) * fun(x_right) > 0 
             quit
@@ -62,15 +63,17 @@ function x = bisection_solver(fun,x_left,x_right)
                 break
             end
         end
+        count = count + 1;
     end
     x = c;
 end
 
 
 %Note that fun(x) should output [f,dfdx], where dfdx is the derivative of f
-function z = newton_solver(fun,x0)
+function [z, counter] = newton_solver(fun,x0)
     difference = 1;
     x1 = x0;
+    counter = 0;
     while difference > 10^-14
         x0 = x1;
         y_val = fun(x0); 
@@ -80,16 +83,18 @@ function z = newton_solver(fun,x0)
             x1 = x0 - y_val(1)/ y_val(2);
             difference = abs(x1 - x0);
         end 
+        counter = counter +1;
     end
     z = x1;
 end
 
 
 
-function x = secant_solver(fun, x0, x1)
+function [x, count] = secant_solver(fun, x0, x1)
     y0 = fun(x0);
     y1 = fun(x1);
     difference = 1;
+    count = 0;
     while difference > 10^-14
         if abs(y1-y0) < 10^-14
             quit
@@ -103,6 +108,7 @@ function x = secant_solver(fun, x0, x1)
         x1 = x2;
         y1 = fun(x1);
         end
+        count = count + 1;
     end
     x = x2;
 end

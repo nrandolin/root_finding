@@ -16,7 +16,7 @@
 % % Test Secant
 % clear
 % solver_flag = 3;
-% fun = @test_function01;
+% fun = @test_function02;
 % 
 % filter_list = [1e-15, 1e-2,1e-14,1e-2,2];
 % x_guess0 = 1;
@@ -25,7 +25,7 @@
 %     
 % [p_precit, k_precidt, p, k] = convergence_analysis(solver_flag, fun, ...
 % x_guess0, guess_list1, guess_list2, filter_list)
-
+% 
 % hold off
 
 % Test fzero
@@ -44,5 +44,17 @@ x_guess0, guess_list1, guess_list2, filter_list)
 hold off
 
 
+function [f_val, dfdx] = test_function02(x)
+    %declare input_list as a global variable
+    global input_list;
 
+    %append the current input to input_list
+    %formatted so this works even if x is a column vector instead of a scalar
+    input_list(:,end+1) = x;
+
+    %perform the rest of the computation to generate output
+    %I just put in a quadratic function as an example
+    f_val = (x-5).^2;
+    dfdx = 2.*(x-5);
+end
 
