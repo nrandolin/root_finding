@@ -6,7 +6,7 @@ function egg()
     egg_params.a = 3; egg_params.b = 2; egg_params.c = .15;
 
     % animate collision of egg and save video
-    animation_example(egg_params,@egg_trajectory01,10,0)
+    animation(egg_params,@egg_trajectory01,10,0)
 end
 %% LEFT RIGHT BOUNDS
 function [xmin, xmax, s_root_x] = LR_bounding(x0, y0, theta, egg_params)
@@ -120,9 +120,9 @@ function [t_ground,t_wall] = collision_func(traj_fun, egg_params, x_wall, y_grou
     t_wall = bisection_solver(x_traj_wrapper_2, 0, 10); 
 end
 %% ANIMATION
-function animation_example(egg_params,traj_fun,x_wall,y_ground)
+function animation(egg_params,traj_fun,x_wall,y_ground)
     
-    % Download path for egg animaion
+    % Download path for egg animation
     mypath1 = 'C:\Users\ldao\Downloads\';
     fname='egg_animation.avi';
     input_fname = [mypath1,fname];
