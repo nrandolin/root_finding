@@ -17,9 +17,9 @@ function egg()
 %     hold off
     
 %     collision_func(@egg_trajectory01, egg_params, 10, 0)
-    t = 0:0.1:10
-    [x0,y0,theta] = egg_trajectory01(t)
-    plot(x0, y0)
+%     t = 0:0.1:10
+%     [x0,y0,theta] = egg_trajectory01(t)
+%     plot(x0, y0)
     animation_example(egg_params,@egg_trajectory01,10,0)
 
 
@@ -148,7 +148,7 @@ end
 %% ANIMATION
 %Short example demonstrating how to create a MATLAB animation
 %In this case, a square moving along an elliptical path
-function animation_example( egg_params,traj_fun,x_wall,y_ground)
+function animation_example(egg_params,traj_fun,x_wall,y_ground)
     mypath1 = 'C:\Users\ldao\Downloads\';
     fname='egg_animation.avi';
     input_fname = [mypath1,fname];
