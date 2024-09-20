@@ -12,7 +12,7 @@
 % x_guess0, guess_list1, guess_list2, filter_list)
 % 
 % hold off
-% 
+%%
 % % Test Secant
 % clear
 % solver_flag = 3;
@@ -27,7 +27,7 @@
 % x_guess0, guess_list1, guess_list2, filter_list)
 % 
 % hold off
-
+%%
 % Test fzero
 clear
 solver_flag = 4;

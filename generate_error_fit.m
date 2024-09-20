@@ -1,5 +1,4 @@
 %% Linear Regression Function
-%example for how to compute the fit line
 %data points to be used in the regression
 %x_regression -> e_n
 %y_regression -> e_{n+1}
